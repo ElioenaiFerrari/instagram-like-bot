@@ -3,7 +3,8 @@ const fs = require('fs');
 const puppeteer = require('puppeteer');
 
 const { URL, USERNAME, PASSWORD, COMMENT } = process.env;
-const SLEEP_TIME = 5000;
+
+const SLEEP_TIME = 3000;
 const INSTAGRAM_LIMIT_TIME = 60000;
 
 (async () => {
@@ -46,7 +47,6 @@ const INSTAGRAM_LIMIT_TIME = 60000;
     await page.goto(URL);
 
     await page.waitForTimeout(SLEEP_TIME);
-    const INSTAGRAM_LIMIT_TIME = 60000;
 
     const usernameInput = await page.$('input[name=username]');
     const passwordInput = await page.$('input[name=password]');
@@ -58,14 +58,12 @@ const INSTAGRAM_LIMIT_TIME = 60000;
     await signinButton.click();
 
     await page.waitForTimeout(SLEEP_TIME);
-    const INSTAGRAM_LIMIT_TIME = 60000;
 
     const noNowButton = await page.$('div.cmbtv button[type=button]');
 
     await noNowButton.click();
 
     await page.waitForTimeout(SLEEP_TIME);
-    const INSTAGRAM_LIMIT_TIME = 60000;
 
     const commentInput = await page.$('textarea.Ypffh');
 
