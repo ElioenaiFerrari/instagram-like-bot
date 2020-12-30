@@ -4,7 +4,7 @@ const puppeteer = require('puppeteer');
 
 const { URL, USERNAME, PASSWORD, COMMENT } = process.env;
 
-const SLEEP_TIME = 3000;
+const SLEEP_TIME = 5000;
 const INSTAGRAM_LIMIT_TIME = 60000;
 
 (async () => {
@@ -22,7 +22,7 @@ const INSTAGRAM_LIMIT_TIME = 60000;
 
     await page.goto(URL);
 
-    // let commentsCount = 0;
+    await page.waitForTimeout(SLEEP_TIME);
 
     while (true) {
       // if (commentsCount === 5) {
@@ -44,6 +44,9 @@ const INSTAGRAM_LIMIT_TIME = 60000;
       await page.waitForTimeout(INSTAGRAM_LIMIT_TIME);
     }
   } else {
+    const cookies = await page.cookies();
+    fs.writeFileSync('./cookies.json', JSON.stringify(cookies, null, 2));
+
     await page.goto(URL);
 
     await page.waitForTimeout(SLEEP_TIME);
@@ -65,13 +68,18 @@ const INSTAGRAM_LIMIT_TIME = 60000;
 
     await page.waitForTimeout(SLEEP_TIME);
 
-    const commentInput = await page.$('textarea.Ypffh');
+    while (true) {
+      const commentInput = await page.$('textarea.Ypffh');
 
-    await commentInput.type(COMMENT, { delay: 100 });
+      await commentInput.click({ clickCount: 3 });
 
-    await commentInput.press(String.fromCharCode(13));
+      await commentInput.press('Backspace');
 
-    const cookies = await page.cookies();
-    fs.writeFileSync('./cookies.json', JSON.stringify(cookies, null, 2));
+      await commentInput.type(COMMENT, { delay: 100 });
+
+      await commentInput.press('Enter');
+
+      await page.waitForTimeout(SLEEP_TIME);
+    }
   }
 })();
