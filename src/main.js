@@ -20,14 +20,14 @@ const defaultTimeout = 5000;
 
     await page.goto(URL);
 
-    let commentsCount = 0;
+    // let commentsCount = 0;
 
     while (true) {
-      if (commentsCount === 5) {
-        await page.waitForTimeout(120000);
-        commentsCount = 0;
-        continue;
-      }
+      // if (commentsCount === 5) {
+      //   await page.waitForTimeout(120000);
+      //   commentsCount = 0;
+      //   continue;
+      // }
 
       const commentInput = await page.$('textarea.Ypffh');
 
@@ -39,7 +39,7 @@ const defaultTimeout = 5000;
 
       await commentInput.press('Enter');
 
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(60000);
     }
   } else {
     await page.goto(URL);
