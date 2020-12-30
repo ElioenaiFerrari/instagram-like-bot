@@ -20,13 +20,27 @@ const defaultTimeout = 5000;
 
     await page.goto(URL);
 
-    await page.waitForTimeout(defaultTimeout);
+    let commentsCount = 0;
 
-    const commentInput = await page.$('textarea.Ypffh');
+    while (true) {
+      if (commentsCount === 5) {
+        await page.waitForTimeout(120000);
+        commentsCount = 0;
+        continue;
+      }
 
-    await commentInput.type(COMMENT, { delay: 100 });
+      const commentInput = await page.$('textarea.Ypffh');
 
-    await commentInput.press(String.fromCharCode(13));
+      await commentInput.click({ clickCount: 3 });
+
+      await commentInput.press('Backspace');
+
+      await commentInput.type(COMMENT, { delay: 100 });
+
+      await commentInput.press('Enter');
+
+      await page.waitForTimeout(2000);
+    }
   } else {
     await page.goto(URL);
 
