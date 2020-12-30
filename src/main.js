@@ -7,6 +7,72 @@ const { URL, USERNAME, PASSWORD, COMMENT } = process.env;
 const SLEEP_TIME = 5000;
 const INSTAGRAM_LIMIT_TIME = 60000;
 
+const signin = async (page, username, password) => {
+  const usernameInput = await page.$('input[name=username]');
+  const passwordInput = await page.$('input[name=password]');
+  const signinButton = await page.$('button[type=submit]');
+
+  await usernameInput.type(username, { delay: 100 });
+  await passwordInput.type(password, { delay: 100 });
+
+  await signinButton.click();
+};
+
+const hasCookies = () => fs.existsSync('./cookies.json');
+
+const saveCookiesInMemory = async (page) => {
+  const cookies = await page.cookies();
+  fs.writeFileSync('./cookies.json', JSON.stringify(cookies, null, 2));
+};
+
+const setCookiesInBrowser = async (page) => {
+  const cookiesString = fs.readFileSync('./cookies.json');
+  const savedCookies = JSON.parse(cookiesString);
+  await page.setCookie(...savedCookies);
+
+  return;
+};
+
+const caseHasCookies = async (page) => {
+  while (true) {
+    const commentInput = await page.$('textarea.Ypffh');
+
+    await commentInput.click({ clickCount: 3 });
+
+    await commentInput.press('Backspace');
+
+    await commentInput.type(COMMENT, { delay: 100 });
+
+    await commentInput.press('Enter');
+
+    await page.waitForTimeout(INSTAGRAM_LIMIT_TIME);
+  }
+};
+
+const caseNotHasCookies = async (page, comment, sleepTime, saveCookies) => {
+  const noNowButton = await page.$('div.cmbtv button[type=button]');
+
+  await noNowButton.click();
+
+  await page.waitForTimeout(sleepTime);
+
+  await saveCookies(page);
+
+  while (true) {
+    const commentInput = await page.$('textarea.Ypffh');
+
+    await commentInput.click({ clickCount: 3 });
+
+    await commentInput.press('Backspace');
+
+    await commentInput.type(comment, { delay: 100 });
+
+    await commentInput.press('Enter');
+
+    await page.waitForTimeout(sleepTime);
+  }
+};
+
 (async () => {
   const browser = await puppeteer.launch({
     headless: false,
@@ -15,71 +81,18 @@ const INSTAGRAM_LIMIT_TIME = 60000;
 
   const page = await browser.newPage();
 
-  if (fs.existsSync('./cookies.json')) {
-    const cookiesString = fs.readFileSync('./cookies.json');
-    const savedCookies = JSON.parse(cookiesString);
-    await page.setCookie(...savedCookies);
+  if (hasCookies()) {
+    await setCookiesInBrowser(page);
 
     await page.goto(URL);
 
     await page.waitForTimeout(SLEEP_TIME);
-
-    while (true) {
-      // if (commentsCount === 5) {
-      //   await page.waitForTimeout(120000);
-      //   commentsCount = 0;
-      //   continue;
-      // }
-
-      const commentInput = await page.$('textarea.Ypffh');
-
-      await commentInput.click({ clickCount: 3 });
-
-      await commentInput.press('Backspace');
-
-      await commentInput.type(COMMENT, { delay: 100 });
-
-      await commentInput.press('Enter');
-
-      await page.waitForTimeout(INSTAGRAM_LIMIT_TIME);
-    }
+    await caseHasCookies(page);
   } else {
-    const cookies = await page.cookies();
-    fs.writeFileSync('./cookies.json', JSON.stringify(cookies, null, 2));
-
     await page.goto(URL);
-
     await page.waitForTimeout(SLEEP_TIME);
-
-    const usernameInput = await page.$('input[name=username]');
-    const passwordInput = await page.$('input[name=password]');
-    const signinButton = await page.$('button[type=submit]');
-
-    await usernameInput.type(USERNAME, { delay: 100 });
-    await passwordInput.type(PASSWORD, { delay: 100 });
-
-    await signinButton.click();
-
+    await signin(page, USERNAME, PASSWORD);
     await page.waitForTimeout(SLEEP_TIME);
-
-    const noNowButton = await page.$('div.cmbtv button[type=button]');
-
-    await noNowButton.click();
-
-    await page.waitForTimeout(SLEEP_TIME);
-
-    while (true) {
-      const commentInput = await page.$('textarea.Ypffh');
-
-      await commentInput.click({ clickCount: 3 });
-
-      await commentInput.press('Backspace');
-
-      await commentInput.type(COMMENT, { delay: 100 });
-
-      await commentInput.press('Enter');
-
-      await page.waitForTimeout(SLEEP_TIME);
-    }
+    await caseNotHasCookies(page, COMMENT, SLEEP_TIME, saveCookiesInMemory);
   }
 })();
