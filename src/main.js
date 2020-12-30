@@ -33,7 +33,7 @@ const setCookiesInBrowser = async (page) => {
   return;
 };
 
-const caseHasCookies = async (page) => {
+const caseHasCookies = async (page, comment, instagramLimitTime) => {
   while (true) {
     const commentInput = await page.$('textarea.Ypffh');
 
@@ -41,11 +41,11 @@ const caseHasCookies = async (page) => {
 
     await commentInput.press('Backspace');
 
-    await commentInput.type(COMMENT, { delay: 100 });
+    await commentInput.type(comment, { delay: 100 });
 
     await commentInput.press('Enter');
 
-    await page.waitForTimeout(INSTAGRAM_LIMIT_TIME);
+    await page.waitForTimeout(instagramLimitTime);
   }
 };
 
@@ -87,7 +87,8 @@ const caseNotHasCookies = async (page, comment, sleepTime, saveCookies) => {
     await page.goto(URL);
 
     await page.waitForTimeout(SLEEP_TIME);
-    await caseHasCookies(page);
+
+    await caseHasCookies(page, COMMENT, INSTAGRAM_LIMIT_TIME);
   } else {
     await page.goto(URL);
     await page.waitForTimeout(SLEEP_TIME);
