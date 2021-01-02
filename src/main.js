@@ -2,7 +2,7 @@ require('dotenv/config');
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 
-const { URL, USERNAME, PASSWORD, COMMENT } = process.env;
+const { URL, USERNAME, PASSWORD, COMMENT, FACEBOOK } = process.env;
 
 const SLEEP_TIME = 5000;
 const INSTAGRAM_LIMIT_TIME = 60000;
@@ -13,6 +13,25 @@ const signin = async (page, username, password) => {
   const signinButton = await page.$('button[type=submit]');
 
   await usernameInput.type(username, { delay: 100 });
+  await passwordInput.type(password, { delay: 100 });
+
+  await signinButton.click();
+};
+
+const signinWithFacebook = async (page, email, password) => {
+  const facebookButton = await page.$('span.KPnG0');
+
+  await facebookButton.click();
+
+  await page.waitForTimeout(SLEEP_TIME);
+
+  const emailInput = await page.$('input[name=email]');
+  const passwordInput = await page.$('input[name=pass]');
+  const signinButton = await page.$('button#loginbutton');
+
+  await page.waitForTimeout(SLEEP_TIME);
+
+  await emailInput.type(email, { delay: 100 });
   await passwordInput.type(password, { delay: 100 });
 
   await signinButton.click();
@@ -49,10 +68,20 @@ const caseHasCookies = async (page, comment, instagramLimitTime) => {
   }
 };
 
-const caseNotHasCookies = async (page, comment, sleepTime, saveCookies) => {
-  const noNowButton = await page.$('div.cmbtv button[type=button]');
+const caseNotHasCookies = async (
+  page,
+  comment,
+  sleepTime,
 
-  await noNowButton.click();
+  saveCookies,
+  instragramTime,
+  negateButton = false
+) => {
+  if (negateButton) {
+    const noNowButton = await page.$('div.cmbtv button[type=button]');
+
+    await noNowButton.click();
+  }
 
   await page.waitForTimeout(sleepTime);
 
@@ -69,7 +98,7 @@ const caseNotHasCookies = async (page, comment, sleepTime, saveCookies) => {
 
     await commentInput.press('Enter');
 
-    await page.waitForTimeout(sleepTime);
+    await page.waitForTimeout(instragramTime);
   }
 };
 
@@ -92,8 +121,28 @@ const caseNotHasCookies = async (page, comment, sleepTime, saveCookies) => {
   } else {
     await page.goto(URL);
     await page.waitForTimeout(SLEEP_TIME);
-    await signin(page, USERNAME, PASSWORD);
-    await page.waitForTimeout(SLEEP_TIME);
-    await caseNotHasCookies(page, COMMENT, SLEEP_TIME, saveCookiesInMemory);
+
+    if (Boolean(FACEBOOK)) {
+      await signinWithFacebook(page, USERNAME, PASSWORD);
+      await page.waitForTimeout(SLEEP_TIME);
+      await caseNotHasCookies(
+        page,
+        COMMENT,
+        SLEEP_TIME,
+        INSTAGRAM_LIMIT_TIME,
+        saveCookiesInMemory
+      );
+    } else {
+      await signin(page, USERNAME, PASSWORD);
+      await page.waitForTimeout(SLEEP_TIME);
+      await caseNotHasCookies(
+        page,
+        COMMENT,
+        SLEEP_TIME,
+        INSTAGRAM_LIMIT_TIME,
+        saveCookiesInMemory,
+        true
+      );
+    }
   }
 })();
