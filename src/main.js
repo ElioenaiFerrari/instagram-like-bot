@@ -54,7 +54,7 @@ const setCookiesInBrowser = async (page) => {
 };
 
 const getRandomComment = (comments = []) => {
-  const randomIndex = Math.round(Math.random() * comments.length);
+  const randomIndex = Math.round(Math.random() * comments.length - 1);
   const randomComment = comments[randomIndex];
 
   return randomComment;
