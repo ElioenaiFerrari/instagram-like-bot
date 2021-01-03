@@ -2,18 +2,19 @@ require('dotenv/config');
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 
-const { URL, USERNAME, PASSWORD, COMMENT, FACEBOOK } = process.env;
+const { URL, USERNAME, PASSWORD, COMMENTS, FACEBOOK } = process.env;
 
 const SLEEP_TIME = 5000;
 const INSTAGRAM_LIMIT_TIME = 60000;
+const TYPE_PARAMS = { delay: 100 };
 
 const signin = async (page, username, password) => {
   const usernameInput = await page.$('input[name=username]');
   const passwordInput = await page.$('input[name=password]');
   const signinButton = await page.$('button[type=submit]');
 
-  await usernameInput.type(username, { delay: 100 });
-  await passwordInput.type(password, { delay: 100 });
+  await usernameInput.type(username, TYPE_PARAMS);
+  await passwordInput.type(password, TYPE_PARAMS);
 
   await signinButton.click();
 };
@@ -31,8 +32,8 @@ const signinWithFacebook = async (page, email, password) => {
 
   await page.waitForTimeout(SLEEP_TIME);
 
-  await emailInput.type(email, { delay: 100 });
-  await passwordInput.type(password, { delay: 100 });
+  await emailInput.type(email, TYPE_PARAMS);
+  await passwordInput.type(password, TYPE_PARAMS);
 
   await signinButton.click();
 };
@@ -52,7 +53,14 @@ const setCookiesInBrowser = async (page) => {
   return;
 };
 
-const startComment = async (page, comment, instragramTime) => {
+const getRandomComment = (comments = []) => {
+  const randomIndex = Math.round(Math.random() * comments.length);
+  const randomComment = comments[randomIndex];
+
+  return randomComment;
+};
+
+const startComment = async (page, comments, instragramTime) => {
   let commentCount = 0;
 
   while (true) {
@@ -62,7 +70,10 @@ const startComment = async (page, comment, instragramTime) => {
 
     await commentInput.press('Backspace');
 
-    await commentInput.type(comment, { delay: 100 });
+    await commentInput.type(
+      getRandomComment(JSON.parse(comments)),
+      TYPE_PARAMS
+    );
 
     await commentInput.press('Enter');
 
@@ -74,13 +85,13 @@ const startComment = async (page, comment, instragramTime) => {
   }
 };
 
-const caseHasCookies = async (page, comment, instragramTime) => {
-  return startComment(page, comment, instragramTime);
+const caseHasCookies = async (page, comments, instragramTime) => {
+  return startComment(page, comments, instragramTime);
 };
 
 const caseNotHasCookies = async (
   page,
-  comment,
+  comments,
   sleepTime,
   saveCookies,
   instragramTime,
@@ -96,7 +107,7 @@ const caseNotHasCookies = async (
 
   await saveCookies(page);
 
-  return startComment(page, comment, instragramTime);
+  return startComment(page, comments, instragramTime);
 };
 
 (async () => {
@@ -114,7 +125,7 @@ const caseNotHasCookies = async (
 
     await page.waitForTimeout(SLEEP_TIME);
 
-    await caseHasCookies(page, COMMENT, INSTAGRAM_LIMIT_TIME);
+    await caseHasCookies(page, COMMENTS, INSTAGRAM_LIMIT_TIME);
   } else {
     await page.goto(URL);
     await page.waitForTimeout(SLEEP_TIME);
@@ -124,7 +135,7 @@ const caseNotHasCookies = async (
       await page.waitForTimeout(SLEEP_TIME);
       await caseNotHasCookies(
         page,
-        COMMENT,
+        COMMENTS,
         SLEEP_TIME,
         INSTAGRAM_LIMIT_TIME,
         saveCookiesInMemory
@@ -134,7 +145,7 @@ const caseNotHasCookies = async (
       await page.waitForTimeout(SLEEP_TIME);
       await caseNotHasCookies(
         page,
-        COMMENT,
+        COMMENTS,
         SLEEP_TIME,
         INSTAGRAM_LIMIT_TIME,
         saveCookiesInMemory,
