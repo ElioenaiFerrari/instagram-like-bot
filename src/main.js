@@ -52,7 +52,9 @@ const setCookiesInBrowser = async (page) => {
   return;
 };
 
-const caseHasCookies = async (page, comment, instagramLimitTime) => {
+const startComment = async (page, comment, instragramTime) => {
+  let commentCount = 0;
+
   while (true) {
     const commentInput = await page.$('textarea.Ypffh');
 
@@ -64,15 +66,22 @@ const caseHasCookies = async (page, comment, instagramLimitTime) => {
 
     await commentInput.press('Enter');
 
-    await page.waitForTimeout(instagramLimitTime);
+    commentCount += 1;
+
+    console.log(`Feito ${commentCount} comentários`);
+
+    await page.waitForTimeout(instragramTime);
   }
+};
+
+const caseHasCookies = async (page, comment, instragramTime) => {
+  return startComment(page, comment, instragramTime);
 };
 
 const caseNotHasCookies = async (
   page,
   comment,
   sleepTime,
-
   saveCookies,
   instragramTime,
   negateButton = false
@@ -87,19 +96,7 @@ const caseNotHasCookies = async (
 
   await saveCookies(page);
 
-  while (true) {
-    const commentInput = await page.$('textarea.Ypffh');
-
-    await commentInput.click({ clickCount: 3 });
-
-    await commentInput.press('Backspace');
-
-    await commentInput.type(comment, { delay: 100 });
-
-    await commentInput.press('Enter');
-
-    await page.waitForTimeout(instragramTime);
-  }
+  return startComment(page, comment, instragramTime);
 };
 
 (async () => {
