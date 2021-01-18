@@ -5,9 +5,10 @@
   "license": "MIT",
   "dependencies": {
     "dotenv": "^8.2.0",
+    "pm2": "^4.5.1",
     "puppeteer": "^5.5.0"
   },
   "scripts": {
-    "start": "node src/main.js"
+    "start": "pm2 start src/main.js"
   }
 }

@@ -4,7 +4,7 @@ const puppeteer = require('puppeteer');
 
 const { URL, USERNAME, PASSWORD, COMMENTS, FACEBOOK } = process.env;
 
-const SLEEP_TIME = 3000;
+const SLEEP_TIME = 5000;
 const INSTAGRAM_LIMIT_TIME = 60000;
 const TYPE_PARAMS = { delay: 100 };
 
